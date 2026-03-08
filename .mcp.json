@@ -1,0 +1,8 @@
+{
+  "mcpServers": {
+    "db-mcp": {
+      "command": "node",
+      "args": ["build/index.js"]
+    }
+  }
+}
