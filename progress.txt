@@ -2,3 +2,4 @@ DONE: Step 1 — Project scaffolding + empty MCP server (package.json, tsconfig.
 DONE: Step 3 — API client module (src/api-client.ts with dbGet<T>, fetch-based, error handling)
 DONE: Step 4 — find_station tool (src/tools/find-station.ts, registered in index.ts, verified München Hbf returns id 8000261)
 DONE: Step 5 — get_departures tool (src/tools/get-departures.ts, registered in index.ts, verified departures returned for München Hbf with line.name, direction, when, delay, platform, remarks)
+DONE: Step 6 — find_trip tool (src/tools/find-trip.ts, two-step: fetches departures for full day, filters by line.name, fetches trip details with stopovers/remarks. Error case returns available train names. Registered in index.ts, verified error path with real API data)
