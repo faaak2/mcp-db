@@ -1,0 +1,1 @@
+DONE: Step 1 — Project scaffolding + empty MCP server (package.json, tsconfig.json, src/index.ts)
