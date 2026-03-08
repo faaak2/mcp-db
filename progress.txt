@@ -1,1 +1,1 @@
-DONE: Step 1 — Project scaffolding + empty MCP server (package.json, tsconfig.json, src/index.ts)
+DONE: Step 1 — Project scaffolding + empty MCP server (package.json, tsconfig.json, src/index.ts)DONE: Step 2 — System prompt via instructions (src/instructions.ts, McpServer constructor updated)
