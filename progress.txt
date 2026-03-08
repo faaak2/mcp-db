@@ -3,3 +3,4 @@ DONE: Step 3 — API client module (src/api-client.ts with dbGet<T>, fetch-based
 DONE: Step 4 — find_station tool (src/tools/find-station.ts, registered in index.ts, verified München Hbf returns id 8000261)
 DONE: Step 5 — get_departures tool (src/tools/get-departures.ts, registered in index.ts, verified departures returned for München Hbf with line.name, direction, when, delay, platform, remarks)
 DONE: Step 6 — find_trip tool (src/tools/find-trip.ts, two-step: fetches departures for full day, filters by line.name, fetches trip details with stopovers/remarks. Error case returns available train names. Registered in index.ts, verified error path with real API data)
+DONE: Step 7 — find_alternatives tool (src/tools/find-alternatives.ts, GET /journeys with from_id, to_id, departure, results params, stopovers+remarks enabled. Registered in index.ts, verified via MCP tools/list and tool call. External API had transient 503 but tool correctly surfaces errors.)
