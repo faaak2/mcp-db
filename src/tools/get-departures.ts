@@ -19,6 +19,13 @@ export function registerGetDepartures(server: McpServer) {
     },
     async ({ station_id, when, duration }) => {
       try {
+        if (!/^\d{6,9}$/.test(station_id)) {
+          return {
+            isError: true,
+            content: [{ type: "text" as const, text: `get_departures failed: Invalid station_id '${station_id}'. Expected a numeric HAFAS ID (e.g. '8000261' for München Hbf). Use find_station to look up the correct ID.` }],
+          };
+        }
+
         const params: Record<string, string> = {
           duration: String(duration),
         };
@@ -26,13 +33,17 @@ export function registerGetDepartures(server: McpServer) {
           params.when = when;
         }
 
-        const data = await dbGet<unknown[]>(
+        const data = await dbGet<unknown>(
           `/stops/${station_id}/departures`,
           params,
         );
 
+        const departures = Array.isArray(data)
+          ? data
+          : (data as Record<string, unknown>).departures ?? data;
+
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],
+          content: [{ type: "text" as const, text: JSON.stringify(departures, null, 2) }],
         };
       } catch (error) {
         return {

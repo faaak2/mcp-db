@@ -13,6 +13,37 @@ interface DeparturesResponse {
   [key: string]: unknown;
 }
 
+const PRODUCT_PREFIXES: Record<string, string[]> = {
+  nationalExpress: ["ICE", "TGV", "RJ", "RJX", "ECE"],
+  national: ["IC", "EC", "EN", "NJ", "FLX"],
+  regionalExpress: ["RE", "IRE", "MEX", "FEX"],
+  regional: ["RB", "RS"],
+  suburban: ["S"],
+};
+
+function getProductFilters(trainName: string): Record<string, string> {
+  const prefix = trainName.replace(/\s+/g, "").replace(/\d+$/, "").toUpperCase();
+
+  for (const [product, prefixes] of Object.entries(PRODUCT_PREFIXES)) {
+    if (prefixes.includes(prefix)) {
+      const filters: Record<string, string> = {};
+      for (const key of Object.keys(PRODUCT_PREFIXES)) {
+        filters[key] = key === product ? "true" : "false";
+      }
+      // Also disable non-rail products
+      filters.bus = "false";
+      filters.ferry = "false";
+      filters.subway = "false";
+      filters.tram = "false";
+      filters.taxi = "false";
+      return filters;
+    }
+  }
+
+  // Unknown prefix — don't filter
+  return {};
+}
+
 export function registerFindTrip(server: McpServer) {
   server.tool(
     "find_trip",
@@ -24,21 +55,32 @@ export function registerFindTrip(server: McpServer) {
     },
     async ({ train_name, station_id, date }) => {
       try {
-        // Step 1: Get all departures for the day
+        if (!/^\d{6,9}$/.test(station_id)) {
+          return {
+            isError: true,
+            content: [{ type: "text" as const, text: `find_trip failed: Invalid station_id '${station_id}'. Expected a numeric HAFAS ID (e.g. '8000261' for München Hbf). Use find_station to look up the correct ID.` }],
+          };
+        }
+
+        // Step 1: Get all departures for the day, filtered by product type
+        const productFilters = getProductFilters(train_name);
         const data = await dbGet<DeparturesResponse>(
           `/stops/${station_id}/departures`,
           {
             when: `${date}T00:00`,
             duration: "1440",
+            ...productFilters,
           },
         );
 
         const departures: Departure[] = Array.isArray(data) ? data : (data.departures ?? []);
 
-        // Step 2: Filter by line.name (case-insensitive)
+        // Step 2: Filter by line.name (case-insensitive, whitespace-normalized)
+        const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, "");
         const match = departures.find(
           (d) =>
-            d.line?.name?.toLowerCase() === train_name.toLowerCase(),
+            d.line?.name != null &&
+            normalize(d.line.name) === normalize(train_name),
         );
 
         if (!match || !match.tripId) {

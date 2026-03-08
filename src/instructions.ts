@@ -34,5 +34,5 @@ FAHRGASTRECHTE — 60-MINUTEN-REGEL
 ALTERNATIVE VERBINDUNGEN
 - Immer alle noch erreichbaren Zwischenhalte des aktuellen Zuges prüfen,
   nicht nur den Endbahnhof.
-- departure-Parameter für find_alternatives = tatsächliche Ankunft am jeweiligen
+- departure-Parameter für find_journeys = tatsächliche Ankunft am jeweiligen
   Halt (mit Verspätung), nicht die geplante Zeit.`;

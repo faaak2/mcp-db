@@ -4,7 +4,7 @@ import { instructions } from "./instructions.js";
 import { registerFindStation } from "./tools/find-station.js";
 import { registerGetDepartures } from "./tools/get-departures.js";
 import { registerFindTrip } from "./tools/find-trip.js";
-import { registerFindAlternatives } from "./tools/find-alternatives.js";
+import { registerFindJourneys } from "./tools/find-journeys.js";
 
 const server = new McpServer(
   { name: "db-mcp", version: "1.0.0" },
@@ -14,7 +14,7 @@ const server = new McpServer(
 registerFindStation(server);
 registerGetDepartures(server);
 registerFindTrip(server);
-registerFindAlternatives(server);
+registerFindJourneys(server);
 
 const transport = new StdioServerTransport();
 await server.connect(transport);
