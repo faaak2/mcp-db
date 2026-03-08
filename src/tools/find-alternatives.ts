@@ -13,18 +13,25 @@ export function registerFindAlternatives(server: McpServer) {
       results: z.number().default(4).describe("Number of journeys to return (default 4)"),
     },
     async ({ from_id, to_id, departure, results }) => {
-      const data = await dbGet<unknown>("/journeys", {
-        from: from_id,
-        to: to_id,
-        departure,
-        results: String(results),
-        stopovers: "true",
-        remarks: "true",
-      });
+      try {
+        const data = await dbGet<unknown>("/journeys", {
+          from: from_id,
+          to: to_id,
+          departure,
+          results: String(results),
+          stopovers: "true",
+          remarks: "true",
+        });
 
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],
-      };
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ type: "text" as const, text: `find_alternatives failed: ${error instanceof Error ? error.message : String(error)}` }],
+        };
+      }
     },
   );
 }

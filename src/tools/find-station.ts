@@ -14,14 +14,21 @@ export function registerFindStation(server: McpServer) {
         .describe("Number of results to return (default 1)"),
     },
     async ({ query, results }) => {
-      const data = await dbGet<unknown[]>("/locations", {
-        query,
-        results: String(results),
-      });
+      try {
+        const data = await dbGet<unknown[]>("/locations", {
+          query,
+          results: String(results),
+        });
 
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],
-      };
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ type: "text" as const, text: `find_station failed: ${error instanceof Error ? error.message : String(error)}` }],
+        };
+      }
     },
   );
 }

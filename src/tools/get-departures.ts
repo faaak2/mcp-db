@@ -18,21 +18,28 @@ export function registerGetDepartures(server: McpServer) {
         .describe("Duration in minutes to query (default 60)"),
     },
     async ({ station_id, when, duration }) => {
-      const params: Record<string, string> = {
-        duration: String(duration),
-      };
-      if (when) {
-        params.when = when;
+      try {
+        const params: Record<string, string> = {
+          duration: String(duration),
+        };
+        if (when) {
+          params.when = when;
+        }
+
+        const data = await dbGet<unknown[]>(
+          `/stops/${station_id}/departures`,
+          params,
+        );
+
+        return {
+          content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ type: "text" as const, text: `get_departures failed: ${error instanceof Error ? error.message : String(error)}` }],
+        };
       }
-
-      const data = await dbGet<unknown[]>(
-        `/stops/${station_id}/departures`,
-        params,
-      );
-
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],
-      };
     },
   );
 }

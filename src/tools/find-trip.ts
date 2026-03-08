@@ -23,58 +23,65 @@ export function registerFindTrip(server: McpServer) {
       date: z.string().describe("ISO date string (e.g. '2026-03-08')"),
     },
     async ({ train_name, station_id, date }) => {
-      // Step 1: Get all departures for the day
-      const data = await dbGet<DeparturesResponse>(
-        `/stops/${station_id}/departures`,
-        {
-          when: `${date}T00:00`,
-          duration: "1440",
-        },
-      );
+      try {
+        // Step 1: Get all departures for the day
+        const data = await dbGet<DeparturesResponse>(
+          `/stops/${station_id}/departures`,
+          {
+            when: `${date}T00:00`,
+            duration: "1440",
+          },
+        );
 
-      const departures: Departure[] = Array.isArray(data) ? data : (data.departures ?? []);
+        const departures: Departure[] = Array.isArray(data) ? data : (data.departures ?? []);
 
-      // Step 2: Filter by line.name (case-insensitive)
-      const match = departures.find(
-        (d) =>
-          d.line?.name?.toLowerCase() === train_name.toLowerCase(),
-      );
+        // Step 2: Filter by line.name (case-insensitive)
+        const match = departures.find(
+          (d) =>
+            d.line?.name?.toLowerCase() === train_name.toLowerCase(),
+        );
 
-      if (!match || !match.tripId) {
-        const availableNames = [
-          ...new Set(
-            departures
-              .map((d) => d.line?.name)
-              .filter((n): n is string => !!n),
-          ),
-        ];
+        if (!match || !match.tripId) {
+          const availableNames = [
+            ...new Set(
+              departures
+                .map((d) => d.line?.name)
+                .filter((n): n is string => !!n),
+            ),
+          ];
+          return {
+            content: [
+              {
+                type: "text" as const,
+                text: JSON.stringify(
+                  {
+                    error: `No departure found matching '${train_name}' at station ${station_id} on ${date}`,
+                    available_trains: availableNames,
+                  },
+                  null,
+                  2,
+                ),
+              },
+            ],
+          };
+        }
+
+        // Step 3: Fetch full trip details
+        const encodedTripId = encodeURIComponent(match.tripId);
+        const trip = await dbGet<unknown>(`/trips/${encodedTripId}`, {
+          stopovers: "true",
+          remarks: "true",
+        });
+
         return {
-          content: [
-            {
-              type: "text" as const,
-              text: JSON.stringify(
-                {
-                  error: `No departure found matching '${train_name}' at station ${station_id} on ${date}`,
-                  available_trains: availableNames,
-                },
-                null,
-                2,
-              ),
-            },
-          ],
+          content: [{ type: "text" as const, text: JSON.stringify(trip, null, 2) }],
+        };
+      } catch (error) {
+        return {
+          isError: true,
+          content: [{ type: "text" as const, text: `find_trip failed: ${error instanceof Error ? error.message : String(error)}` }],
         };
       }
-
-      // Step 3: Fetch full trip details
-      const encodedTripId = encodeURIComponent(match.tripId);
-      const trip = await dbGet<unknown>(`/trips/${encodedTripId}`, {
-        stopovers: "true",
-        remarks: "true",
-      });
-
-      return {
-        content: [{ type: "text" as const, text: JSON.stringify(trip, null, 2) }],
-      };
     },
   );
 }
