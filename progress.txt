@@ -1,2 +1,3 @@
 DONE: Step 1 — Project scaffolding + empty MCP server (package.json, tsconfig.json, src/index.ts)DONE: Step 2 — System prompt via instructions (src/instructions.ts, McpServer constructor updated)
 DONE: Step 3 — API client module (src/api-client.ts with dbGet<T>, fetch-based, error handling)
+DONE: Step 4 — find_station tool (src/tools/find-station.ts, registered in index.ts, verified München Hbf returns id 8000261)
