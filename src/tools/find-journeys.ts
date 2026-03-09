@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { dbGet } from "../api-client.js";
+import { client } from "../api-client.js";
+import { slimJourneys, compact } from "../slim.js";
 
 export function registerFindJourneys(server: McpServer) {
   server.tool(
@@ -23,17 +24,16 @@ export function registerFindJourneys(server: McpServer) {
           }
         }
 
-        const data = await dbGet<unknown>("/journeys", {
-          from: from_id,
-          to: to_id,
-          departure,
-          results: String(results),
-          stopovers: "true",
-          remarks: "true",
+        const data = await client.journeys(from_id, to_id, {
+          departure: new Date(departure),
+          results,
+          stopovers: true,
+          remarks: true,
         });
 
+        const slim = slimJourneys(data as Record<string, unknown>);
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],
+          content: [{ type: "text" as const, text: compact(slim) }],
         };
       } catch (error) {
         return {

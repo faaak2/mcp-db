@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { dbGet } from "../api-client.js";
+import { client } from "../api-client.js";
+import { slimDepartures, compact } from "../slim.js";
 
 export function registerGetDepartures(server: McpServer) {
   server.tool(
@@ -26,24 +27,14 @@ export function registerGetDepartures(server: McpServer) {
           };
         }
 
-        const params: Record<string, string> = {
-          duration: String(duration),
-        };
-        if (when) {
-          params.when = when;
-        }
+        const opt: Record<string, unknown> = { duration };
+        if (when) opt.when = new Date(when);
 
-        const data = await dbGet<unknown>(
-          `/stops/${station_id}/departures`,
-          params,
-        );
+        const res = await client.departures(station_id, opt);
 
-        const departures = Array.isArray(data)
-          ? data
-          : (data as Record<string, unknown>).departures ?? data;
-
+        const slim = slimDepartures((res.departures ?? []) as Record<string, unknown>[]);
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(departures, null, 2) }],
+          content: [{ type: "text" as const, text: compact(slim) }],
         };
       } catch (error) {
         return {

@@ -78,8 +78,9 @@ if (process.env.PORT) {
     }
 
     if (sessionId && !sessions.has(sessionId)) {
+      // Session expired or lost (e.g. after redeploy) — tell client to re-initialize
       res.writeHead(404, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ error: "Session not found" }));
+      res.end(JSON.stringify({ error: "Session not found. Please start a new session." }));
       return;
     }
 

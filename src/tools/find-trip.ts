@@ -1,15 +1,11 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { dbGet } from "../api-client.js";
+import { client } from "../api-client.js";
+import { slimTrip, compact } from "../slim.js";
 
 interface Departure {
   tripId?: string;
   line?: { name?: string };
-  [key: string]: unknown;
-}
-
-interface DeparturesResponse {
-  departures?: Departure[];
   [key: string]: unknown;
 }
 
@@ -21,27 +17,29 @@ const PRODUCT_PREFIXES: Record<string, string[]> = {
   suburban: ["S"],
 };
 
-function getProductFilters(trainName: string): Record<string, string> {
+function getProductFilters(trainName: string): Record<string, boolean> | undefined {
   const prefix = trainName.replace(/\s+/g, "").replace(/\d+$/, "").toUpperCase();
 
   for (const [product, prefixes] of Object.entries(PRODUCT_PREFIXES)) {
     if (prefixes.includes(prefix)) {
-      const filters: Record<string, string> = {};
-      for (const key of Object.keys(PRODUCT_PREFIXES)) {
-        filters[key] = key === product ? "true" : "false";
-      }
-      // Also disable non-rail products
-      filters.bus = "false";
-      filters.ferry = "false";
-      filters.subway = "false";
-      filters.tram = "false";
-      filters.taxi = "false";
-      return filters;
+      const products: Record<string, boolean> = {
+        nationalExpress: false,
+        national: false,
+        regionalExpress: false,
+        regional: false,
+        suburban: false,
+        bus: false,
+        ferry: false,
+        subway: false,
+        tram: false,
+      };
+      products[product] = true;
+      return products;
     }
   }
 
   // Unknown prefix — don't filter
-  return {};
+  return undefined;
 }
 
 export function registerFindTrip(server: McpServer) {
@@ -62,26 +60,39 @@ export function registerFindTrip(server: McpServer) {
           };
         }
 
-        // Step 1: Get all departures for the day, filtered by product type
-        const productFilters = getProductFilters(train_name);
-        const data = await dbGet<DeparturesResponse>(
-          `/stops/${station_id}/departures`,
-          {
-            when: `${date}T00:00`,
-            duration: "1440",
-            ...productFilters,
-          },
-        );
+        // Step 1: Get departures for the day (db profile max 720 min, so split into two 12h windows)
+        const products = getProductFilters(train_name);
+        const baseOpt: Record<string, unknown> = { duration: 720 };
+        if (products) baseOpt.products = products;
 
-        const departures: Departure[] = Array.isArray(data) ? data : (data.departures ?? []);
+        const res1 = await client.departures(station_id, {
+          ...baseOpt,
+          when: new Date(`${date}T00:00`),
+        });
+        let departures: Departure[] = (res1.departures ?? []) as Departure[];
 
-        // Step 2: Filter by line.name (case-insensitive, whitespace-normalized)
+        // Search second half of day if needed
         const normalize = (s: string) => s.toLowerCase().replace(/\s+/g, "");
-        const match = departures.find(
+        let match = departures.find(
           (d) =>
             d.line?.name != null &&
             normalize(d.line.name) === normalize(train_name),
         );
+
+        if (!match) {
+          const res2 = await client.departures(station_id, {
+            ...baseOpt,
+            when: new Date(`${date}T12:00`),
+          });
+          const moreDepartures = (res2.departures ?? []) as Departure[];
+          departures = [...departures, ...moreDepartures];
+
+          match = moreDepartures.find(
+            (d) =>
+              d.line?.name != null &&
+              normalize(d.line.name) === normalize(train_name),
+          );
+        }
 
         if (!match || !match.tripId) {
           const availableNames = [
@@ -108,15 +119,15 @@ export function registerFindTrip(server: McpServer) {
           };
         }
 
-        // Step 3: Fetch full trip details
-        const encodedTripId = encodeURIComponent(match.tripId);
-        const trip = await dbGet<unknown>(`/trips/${encodedTripId}`, {
-          stopovers: "true",
-          remarks: "true",
+        // Step 2: Fetch full trip details
+        const trip = await client.trip(match.tripId, match.line?.name ?? "", {
+          stopovers: true,
+          remarks: true,
         });
 
+        const slim = slimTrip(trip as Record<string, unknown>);
         return {
-          content: [{ type: "text" as const, text: JSON.stringify(trip, null, 2) }],
+          content: [{ type: "text" as const, text: compact(slim) }],
         };
       } catch (error) {
         return {

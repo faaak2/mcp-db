@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { McpServer } from "@modelcontextprotocol/sdk/server/mcp.js";
-import { dbGet } from "../api-client.js";
+import { client } from "../api-client.js";
 
 export function registerFindStation(server: McpServer) {
   server.tool(
@@ -15,10 +15,7 @@ export function registerFindStation(server: McpServer) {
     },
     async ({ query, results }) => {
       try {
-        const data = await dbGet<unknown[]>("/locations", {
-          query,
-          results: String(results),
-        });
+        const data = await client.locations(query, { results });
 
         return {
           content: [{ type: "text" as const, text: JSON.stringify(data, null, 2) }],

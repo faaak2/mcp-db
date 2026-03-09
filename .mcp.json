@@ -1,6 +1,7 @@
 {
   "mcpServers": {
     "db-mcp": {
+      "type": "http",
       "url": "https://mcp-db-production.up.railway.app/mcp"
     }
   }
