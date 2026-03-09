@@ -21,3 +21,33 @@
 ## Bug Fixing
 - When given a bug: fix it autonomously
 - Follow logs and errors to root cause, then resolve
+
+## Deployment
+
+### Railway (Production)
+- **Project:** mcp-db
+- **Dashboard:** https://railway.com/project/6895105f-9a97-484c-b277-e0e7007c8ed5
+- **URL:** `https://mcp-db-production.up.railway.app/mcp`
+- **Health:** `GET /` → `{"status":"ok","name":"db-mcp"}`
+- **Transport:** Streamable HTTP (MCP Spec 2025-03-26)
+- **Deploy:** `railway up` im Projektverzeichnis
+
+### Transport-Logik (`src/index.ts`)
+- `PORT` env var gesetzt → Streamable HTTP (Railway setzt PORT automatisch)
+- Kein `PORT` → stdio (lokale Nutzung via Claude Desktop/Claude Code)
+
+### MCP-Client Konfiguration (Remote)
+```json
+{
+  "mcpServers": {
+    "db-mcp": {
+      "url": "https://mcp-db-production.up.railway.app/mcp"
+    }
+  }
+}
+```
+
+### Lokaler Test HTTP-Modus
+```bash
+npm run serve   # startet auf PORT=3000
+```

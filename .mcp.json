@@ -1,8 +1,7 @@
 {
   "mcpServers": {
     "db-mcp": {
-      "command": "node",
-      "args": ["build/index.js"]
+      "url": "https://mcp-db-production.up.railway.app/mcp"
     }
   }
 }
