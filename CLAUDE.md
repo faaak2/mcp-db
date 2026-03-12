@@ -24,16 +24,14 @@
 
 ## Deployment
 
-### Railway (Production)
-- **Project:** mcp-db
-- **Dashboard:** https://railway.com/project/6895105f-9a97-484c-b277-e0e7007c8ed5
-- **URL:** `https://mcp-db-production.up.railway.app/mcp`
+### Production (mcp-builder.de)
+- **URL:** `https://mcp-builder.de/db/mcp`
 - **Health:** `GET /` → `{"status":"ok","name":"db-mcp"}`
 - **Transport:** Streamable HTTP (MCP Spec 2025-03-26)
-- **Deploy:** `railway up` im Projektverzeichnis
+- **Hosting:** Systemd service behind Caddy reverse proxy
 
 ### Transport-Logik (`src/index.ts`)
-- `PORT` env var gesetzt → Streamable HTTP (Railway setzt PORT automatisch)
+- `PORT` env var gesetzt → Streamable HTTP
 - Kein `PORT` → stdio (lokale Nutzung via Claude Desktop/Claude Code)
 
 ### MCP-Client Konfiguration (Remote)
@@ -41,7 +39,7 @@
 {
   "mcpServers": {
     "db-mcp": {
-      "url": "https://mcp-db-production.up.railway.app/mcp"
+      "url": "https://mcp-builder.de/db/mcp"
     }
   }
 }
