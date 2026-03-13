@@ -27,8 +27,22 @@ if (process.env.PORT) {
   const PORT = parseInt(process.env.PORT, 10);
   const sessions = new Map<
     string,
-    { server: McpServer; transport: InstanceType<typeof StreamableHTTPServerTransport> }
+    { server: McpServer; transport: InstanceType<typeof StreamableHTTPServerTransport>; createdAt: number }
   >();
+
+  // Session timeout: clean up sessions after 30 min
+  const SESSION_TIMEOUT_MS = 30 * 60 * 1000;
+
+  setInterval(() => {
+    const now = Date.now();
+    for (const [id, session] of sessions) {
+      if (now - session.createdAt > SESSION_TIMEOUT_MS) {
+        session.transport.close?.();
+        sessions.delete(id);
+        console.log(`Session expired: ${id} (${sessions.size} active)`);
+      }
+    }
+  }, 60_000);
 
   const httpServer = createHttpServer(async (req, res) => {
     const url = new URL(req.url || "/", `http://localhost:${PORT}`);
@@ -47,7 +61,7 @@ if (process.env.PORT) {
     }
 
     // CORS
-    res.setHeader("Access-Control-Allow-Origin", "*");
+    res.setHeader("Access-Control-Allow-Origin", "https://mcp-builder.de");
     res.setHeader("Access-Control-Allow-Methods", "GET, POST, DELETE, OPTIONS");
     res.setHeader("Access-Control-Allow-Headers", "Content-Type, mcp-session-id");
     res.setHeader("Access-Control-Expose-Headers", "mcp-session-id");
@@ -88,7 +102,7 @@ if (process.env.PORT) {
     const transport = new StreamableHTTPServerTransport({
       sessionIdGenerator: () => crypto.randomUUID(),
       onsessioninitialized: (id) => {
-        sessions.set(id, { server, transport });
+        sessions.set(id, { server, transport, createdAt: Date.now() });
         console.log(`Session created: ${id} (${sessions.size} active)`);
       },
     });
@@ -106,7 +120,7 @@ if (process.env.PORT) {
     await transport.handleRequest(req, res, parsedBody);
   });
 
-  httpServer.listen(PORT, () => {
+  httpServer.listen(PORT, "127.0.0.1", () => {
     console.log(`DB-MCP Streamable HTTP server listening on port ${PORT}`);
     console.log(`Endpoint: http://localhost:${PORT}/mcp`);
   });
