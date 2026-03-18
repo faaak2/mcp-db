@@ -1,8 +1,9 @@
 {
   "mcpServers": {
-    "db-mcp": {
-      "type": "http",
-      "url": "https://mcp-builder.de/db/mcp"
+    "rmv-mcp": {
+      "type": "stdio",
+      "command": "node",
+      "args": ["build/index.js"]
     }
   }
 }

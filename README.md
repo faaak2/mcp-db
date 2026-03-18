@@ -1,33 +1,13 @@
-# db-mcp
+# rmv-mcp
 
-A [Model Context Protocol](https://modelcontextprotocol.io) server providing real-time Deutsche Bahn travel data — departures, journeys, trip details, and station search.
+A [Model Context Protocol](https://modelcontextprotocol.io) server providing real-time RMV (Rhein-Main-Verkehrsverbund) travel data — departures, journeys, trip details, and station search.
 
 ## Quick Start
-
-### Claude Code
-
-```bash
-claude mcp add db-mcp --transport http https://mcp-builder.de/db/mcp
-```
-
-### Claude Desktop / Other MCP Clients
-
-Add to your MCP client config:
-
-```json
-{
-  "mcpServers": {
-    "db-mcp": {
-      "url": "https://mcp-builder.de/db/mcp"
-    }
-  }
-}
-```
 
 ### Local (stdio)
 
 ```bash
-git clone <repo-url> && cd db
+git clone <repo-url> && cd mcp-rmv
 npm install && npm run build
 ```
 
@@ -36,9 +16,9 @@ Then add to your client config:
 ```json
 {
   "mcpServers": {
-    "db-mcp": {
+    "rmv-mcp": {
       "command": "node",
-      "args": ["/absolute/path/to/db/build/index.js"]
+      "args": ["/absolute/path/to/mcp-rmv/build/index.js"]
     }
   }
 }
@@ -48,7 +28,7 @@ Then add to your client config:
 
 ### `find_station`
 
-Search for a Deutsche Bahn station by name.
+Search for an RMV station by name.
 
 | Parameter | Type   | Required | Description                   |
 |-----------|--------|----------|-------------------------------|
@@ -61,18 +41,18 @@ Get upcoming departures from a station.
 
 | Parameter    | Type   | Required | Description                                      |
 |--------------|--------|----------|--------------------------------------------------|
-| `station_id` | string | yes      | Station ID (e.g. `8000261` for München Hbf)      |
+| `station_id` | string | yes      | Station ID (e.g. `3000010` for Frankfurt Hbf)    |
 | `when`       | string | no       | ISO 8601 datetime (defaults to now)              |
 | `duration`   | number | no       | Duration in minutes to query (default 60)        |
 
 ### `find_trip`
 
-Get full trip details for a specific train, including all stopovers and remarks.
+Get full trip details for a specific train/line, including all stopovers and remarks.
 
 | Parameter    | Type   | Required | Description                                      |
 |--------------|--------|----------|--------------------------------------------------|
-| `train_name` | string | yes      | Train name (e.g. `ICE 599`)                      |
-| `station_id` | string | yes      | Station ID (e.g. `8000261` for München Hbf)      |
+| `train_name` | string | yes      | Train/line name (e.g. `S3`, `RE 30`, `U4`)      |
+| `station_id` | string | yes      | Station ID (e.g. `3000010` for Frankfurt Hbf)    |
 | `date`       | string | yes      | ISO date (e.g. `2026-03-08`)                     |
 
 ### `find_journeys`

@@ -10,11 +10,11 @@ interface Departure {
 }
 
 const PRODUCT_PREFIXES: Record<string, string[]> = {
-  nationalExpress: ["ICE", "TGV", "RJ", "RJX", "ECE"],
-  national: ["IC", "EC", "EN", "NJ", "FLX"],
-  regionalExpress: ["RE", "IRE", "MEX", "FEX"],
-  regional: ["RB", "RS"],
-  suburban: ["S"],
+  "express-train": ["ICE", "TGV", "RJ", "RJX", "ECE"],
+  "long-distance-train": ["IC", "EC", "EN", "IR"],
+  "regiona-train": ["RE", "IRE", "RB", "MEX"],
+  "s-bahn": ["S"],
+  "u-bahn": ["U"],
 };
 
 function getProductFilters(trainName: string): Record<string, boolean> | undefined {
@@ -23,15 +23,16 @@ function getProductFilters(trainName: string): Record<string, boolean> | undefin
   for (const [product, prefixes] of Object.entries(PRODUCT_PREFIXES)) {
     if (prefixes.includes(prefix)) {
       const products: Record<string, boolean> = {
-        nationalExpress: false,
-        national: false,
-        regionalExpress: false,
-        regional: false,
-        suburban: false,
-        bus: false,
-        ferry: false,
-        subway: false,
+        "express-train": false,
+        "long-distance-train": false,
+        "regiona-train": false,
+        "s-bahn": false,
+        "u-bahn": false,
         tram: false,
+        bus: false,
+        watercraft: false,
+        ast: false,
+        "cable-car": false,
       };
       products[product] = true;
       return products;
@@ -45,10 +46,10 @@ function getProductFilters(trainName: string): Record<string, boolean> | undefin
 export function registerFindTrip(server: McpServer) {
   server.tool(
     "find_trip",
-    "Find a specific train trip by name and station. Fetches all departures for the day, matches the train, then retrieves full trip details with stopovers and remarks.",
+    "Find a specific train/bus trip by name and station. Fetches all departures for the day, matches the train, then retrieves full trip details with stopovers and remarks.",
     {
-      train_name: z.string().describe("Train name to search for (e.g. 'ICE 599')"),
-      station_id: z.string().describe("Station ID (e.g. '8000261' for München Hbf)"),
+      train_name: z.string().describe("Train/line name to search for (e.g. 'S3', 'RE 30', 'U4')"),
+      station_id: z.string().describe("Station ID (e.g. '3000010' for Frankfurt Hbf)"),
       date: z.string().describe("ISO date string (e.g. '2026-03-08')"),
     },
     async ({ train_name, station_id, date }) => {
@@ -56,11 +57,11 @@ export function registerFindTrip(server: McpServer) {
         if (!/^\d{6,9}$/.test(station_id)) {
           return {
             isError: true,
-            content: [{ type: "text" as const, text: `find_trip failed: Invalid station_id '${station_id}'. Expected a numeric HAFAS ID (e.g. '8000261' for München Hbf). Use find_station to look up the correct ID.` }],
+            content: [{ type: "text" as const, text: `find_trip failed: Invalid station_id '${station_id}'. Expected a numeric HAFAS ID (e.g. '3000010' for Frankfurt Hbf). Use find_station to look up the correct ID.` }],
           };
         }
 
-        // Step 1: Get departures for the day (db profile max 720 min, so split into two 12h windows)
+        // Step 1: Get departures for the day (split into two 12h windows)
         const products = getProductFilters(train_name);
         const baseOpt: Record<string, unknown> = { duration: 720 };
         if (products) baseOpt.products = products;
@@ -119,8 +120,8 @@ export function registerFindTrip(server: McpServer) {
           };
         }
 
-        // Step 2: Fetch full trip details
-        const trip = await client.trip(match.tripId, match.line?.name ?? "", {
+        // Step 2: Fetch full trip details (hafas-client: trip(id, opt) — 2 params)
+        const trip = await client.trip(match.tripId, {
           stopovers: true,
           remarks: true,
         });

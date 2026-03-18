@@ -7,7 +7,7 @@ import { registerFindJourneys } from "./tools/find-journeys.js";
 
 function createServer(): McpServer {
   const server = new McpServer(
-    { name: "db-mcp", version: "1.0.0" },
+    { name: "rmv-mcp", version: "1.0.0" },
     { instructions },
   );
   registerFindStation(server);
@@ -50,7 +50,7 @@ if (process.env.PORT) {
     // Health check for Railway
     if (url.pathname === "/" && req.method === "GET") {
       res.writeHead(200, { "Content-Type": "application/json" });
-      res.end(JSON.stringify({ status: "ok", name: "db-mcp" }));
+      res.end(JSON.stringify({ status: "ok", name: "rmv-mcp" }));
       return;
     }
 
@@ -121,7 +121,7 @@ if (process.env.PORT) {
   });
 
   httpServer.listen(PORT, "127.0.0.1", () => {
-    console.log(`DB-MCP Streamable HTTP server listening on port ${PORT}`);
+    console.log(`RMV-MCP Streamable HTTP server listening on port ${PORT}`);
     console.log(`Endpoint: http://localhost:${PORT}/mcp`);
   });
 } else {

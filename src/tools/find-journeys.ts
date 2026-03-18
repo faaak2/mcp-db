@@ -8,8 +8,8 @@ export function registerFindJourneys(server: McpServer) {
     "find_journeys",
     "Find journey connections between two stations. Returns journeys with legs, lines, platforms, stopovers, and remarks.",
     {
-      from_id: z.string().describe("Departure station ID (e.g. '8000261' for München Hbf)"),
-      to_id: z.string().describe("Arrival station ID (e.g. '8000105' for Frankfurt Hbf)"),
+      from_id: z.string().describe("Departure station ID (e.g. '3000010' for Frankfurt Hbf)"),
+      to_id: z.string().describe("Arrival station ID (e.g. '3000010' for Frankfurt Hbf)"),
       departure: z.string().describe("ISO departure date/time (e.g. '2026-03-08T14:00')"),
       results: z.number().default(4).describe("Number of journeys to return (default 4)"),
     },
@@ -19,7 +19,7 @@ export function registerFindJourneys(server: McpServer) {
           if (!/^\d{6,9}$/.test(id)) {
             return {
               isError: true,
-              content: [{ type: "text" as const, text: `find_journeys failed: Invalid ${label} '${id}'. Expected a numeric HAFAS ID (e.g. '8000261' for München Hbf). Use find_station to look up the correct ID.` }],
+              content: [{ type: "text" as const, text: `find_journeys failed: Invalid ${label} '${id}'. Expected a numeric HAFAS ID (e.g. '3000010' for Frankfurt Hbf). Use find_station to look up the correct ID.` }],
             };
           }
         }

@@ -6,9 +6,9 @@ import { slimDepartures, compact } from "../slim.js";
 export function registerGetDepartures(server: McpServer) {
   server.tool(
     "get_departures",
-    "Get upcoming departures from a Deutsche Bahn station. Returns raw JSON array of departures with line.name, direction, when, delay, platform, remarks.",
+    "Get upcoming departures from an RMV station. Returns raw JSON array of departures with line.name, direction, when, delay, platform, remarks.",
     {
-      station_id: z.string().describe("Station ID (e.g. '8000261' for München Hbf)"),
+      station_id: z.string().describe("Station ID (e.g. '3000010' for Frankfurt Hbf)"),
       when: z
         .string()
         .optional()
@@ -23,7 +23,7 @@ export function registerGetDepartures(server: McpServer) {
         if (!/^\d{6,9}$/.test(station_id)) {
           return {
             isError: true,
-            content: [{ type: "text" as const, text: `get_departures failed: Invalid station_id '${station_id}'. Expected a numeric HAFAS ID (e.g. '8000261' for München Hbf). Use find_station to look up the correct ID.` }],
+            content: [{ type: "text" as const, text: `get_departures failed: Invalid station_id '${station_id}'. Expected a numeric HAFAS ID (e.g. '3000010' for Frankfurt Hbf). Use find_station to look up the correct ID.` }],
           };
         }
 

@@ -5,7 +5,7 @@ import { client } from "../api-client.js";
 export function registerFindStation(server: McpServer) {
   server.tool(
     "find_station",
-    "Search for a Deutsche Bahn station by name. Returns raw JSON array of matching locations.",
+    "Search for an RMV station by name. Returns raw JSON array of matching locations.",
     {
       query: z.string().describe("Station name to search for"),
       results: z

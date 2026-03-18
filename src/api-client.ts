@@ -1,4 +1,4 @@
-import { createClient } from "db-vendo-client";
-import { profile as dbProfile } from "db-vendo-client/p/db/index.js";
+import { createClient } from "hafas-client";
+import { profile as rmvProfile } from "hafas-client/p/rmv/index.js";
 
-export const client = createClient(dbProfile, "db-mcp-server");
+export const client = createClient(rmvProfile, "rmv-mcp-server");

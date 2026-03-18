@@ -24,26 +24,9 @@
 
 ## Deployment
 
-### Production (mcp-builder.de)
-- **URL:** `https://mcp-builder.de/db/mcp`
-- **Health:** `GET /` → `{"status":"ok","name":"db-mcp"}`
-- **Transport:** Streamable HTTP (MCP Spec 2025-03-26)
-- **Hosting:** Systemd service behind Caddy reverse proxy
-
 ### Transport-Logik (`src/index.ts`)
 - `PORT` env var gesetzt → Streamable HTTP
 - Kein `PORT` → stdio (lokale Nutzung via Claude Desktop/Claude Code)
-
-### MCP-Client Konfiguration (Remote)
-```json
-{
-  "mcpServers": {
-    "db-mcp": {
-      "url": "https://mcp-builder.de/db/mcp"
-    }
-  }
-}
-```
 
 ### Lokaler Test HTTP-Modus
 ```bash

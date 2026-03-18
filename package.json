@@ -1,5 +1,5 @@
 {
-  "name": "db-mcp",
+  "name": "rmv-mcp",
   "version": "1.0.0",
   "type": "module",
   "scripts": {
@@ -9,7 +9,7 @@
   },
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.11.0",
-    "db-vendo-client": "^6.10.8",
+    "hafas-client": "^6.3.6",
     "zod": "^3.24.0"
   },
   "devDependencies": {

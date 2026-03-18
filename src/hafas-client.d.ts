@@ -1,4 +1,4 @@
-declare module "db-vendo-client" {
+declare module "hafas-client" {
   interface ClientOptions {
     when?: Date;
     duration?: number;
@@ -20,7 +20,7 @@ declare module "db-vendo-client" {
     departures(station: string, opt?: ClientOptions): Promise<{ departures: unknown[]; realtimeDataUpdatedAt?: number }>;
     arrivals(station: string, opt?: ClientOptions): Promise<{ arrivals: unknown[]; realtimeDataUpdatedAt?: number }>;
     journeys(from: string, to: string, opt?: ClientOptions): Promise<{ journeys: unknown[]; earlierRef?: string; laterRef?: string; realtimeDataUpdatedAt?: number }>;
-    trip(id: string, lineName: string, opt?: ClientOptions): Promise<unknown>;
+    trip(id: string, opt?: ClientOptions): Promise<unknown>;
     stop(id: string, opt?: ClientOptions): Promise<unknown>;
     nearby(location: { latitude: number; longitude: number }, opt?: ClientOptions): Promise<unknown[]>;
     refreshJourney(refreshToken: string, opt?: ClientOptions): Promise<unknown>;
@@ -29,6 +29,6 @@ declare module "db-vendo-client" {
   export function createClient(profile: unknown, userAgent: string): Client;
 }
 
-declare module "db-vendo-client/p/db/index.js" {
+declare module "hafas-client/p/rmv/index.js" {
   export const profile: unknown;
 }

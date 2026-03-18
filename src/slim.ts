@@ -1,6 +1,6 @@
 /**
- * Strips DB API responses down to the fields the LLM actually needs.
- * Removes coordinates, operator details, ril100 IDs, excessive product info, etc.
+ * Strips HAFAS API responses down to the fields the LLM actually needs.
+ * Removes coordinates, operator details, excessive product info, etc.
  * Also removes undefined/null values to minimize JSON size.
  */
 
